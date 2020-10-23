@@ -8,7 +8,7 @@ def round_nearest(x, base):
     return base * round(x / base)
 
 
-image = cv2.imread('image.jpg')
+image = cv2.imread('test_image.jpg')
 height, width = image.shape[:2]
 # EAST only takes images with dimensions of multiples of 32
 height, width = round_nearest(height, 32), round_nearest(width, 32)
@@ -84,4 +84,6 @@ boxes = non_max_suppression(np.array(rects), probs=confidences)
 for (startX, startY, endX, endY) in boxes:
     cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), -1)
 
-cv2.imwrite('image1.png', image)
+cv2.imwrite('test_result.jpg', image)
+cv2.imshow('test_result.jpg', image)
+cv2.waitKey(0)
