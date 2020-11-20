@@ -19,10 +19,11 @@ TODO next sprint:
 """
 
 # load image file and get info
-# image = cv2.imread('xray.jpg')
+# uncomment the line for the type of image you want to try with
+image = cv2.imread('xray.jpg')
 # image = cv2.imread('xray_upscaled_2x.jpg')
-image = cv2.imread('xray_upscaled_4x.jpg')
-height, width = image.shape[0], image.shape[1] # 1600 x 1600 for 2x, 3000 x 3000 for 4x
+# image = cv2.imread('xray_upscaled_4x.jpg')
+height, width = image.shape[0], image.shape[1]
 
 print('Image Height: ', height)
 print('Image Width: ', width)
@@ -39,8 +40,9 @@ def preprocess_image(image):
 
     # By default OpenCV stores images in BGR format and since pytesseract assumes RGB format,
     # we need to convert from BGR to RGB format/mode:
-    # (this is actually unnecessary for grayscaled images)
-    # img_rgb = cv2.cvtColor(gray, cv2.COLOR_BGR2RGB)
+    
+    # this is actually unnecessary for grayscaled images i think but not sure
+    img_rgb = cv2.cvtColor(gray, cv2.COLOR_BGR2RGB)
     
     print("Image preprocess successfully finished.")
 
@@ -60,19 +62,20 @@ data = pytesseract.image_to_data(preprocessed, output_type=pytesseract.Output.DI
 # print(data['conf'])
 # print(data['text'])
 
-# the amount of 
 bounds = len(data['level'])
 # print(bounds)
 
-for i in range(bounds - 1):
+"""
+for i in range(bounds):
     # arbitrarily chosen confidence for testing purposes
     if int(data['conf'][i]) >= 90:
         top_left = (data['left'][i], data['top'][i])
         bottom_right = (data['width'][i], data['height'][i])
-        print("text: ", data['text'][i])
-        print("top_left: ", top_left)
-        print("bottom_right: ", bottom_right)
+        # print("text: ", data['text'][i])
+        # print("top_left: ", top_left)
+        # print("bottom_right: ", bottom_right)
         redact_character(preprocessed, top_left, bottom_right, (255))
+"""
 
-cv2.imshow("redacted", preprocessed)
+cv2.imshow("redacted (CLOSE WINDOW BY HITTING ANY KEY)", preprocessed)
 cv2.waitKey(0)
