@@ -20,13 +20,13 @@ TODO next sprint:
 
 # load image file and get info
 # uncomment the line for the type of image you want to try with
-image = cv2.imread('xray.jpg')
+# image = cv2.imread('xray.jpg')
 # image = cv2.imread('xray_upscaled_2x.jpg')
 # image = cv2.imread('xray_upscaled_4x.jpg')
-height, width = image.shape[0], image.shape[1]
+# height, width = image.shape[0], image.shape[1]
 
-print('Image Height: ', height)
-print('Image Width: ', width)
+# print('Image Height: ', height)
+# print('Image Width: ', width)
 # print(type(image))
 
 def preprocess_image(image):
@@ -44,7 +44,7 @@ def preprocess_image(image):
     # this is actually unnecessary for grayscaled images i think but not sure
     img_rgb = cv2.cvtColor(gray, cv2.COLOR_BGR2RGB)
     
-    print("Image preprocess successfully finished.")
+    # print("Image preprocess successfully finished.")
 
     return img_rgb
 
@@ -52,7 +52,7 @@ def redact_character(image, top_left, bottom_right, color):
     redacted_image = cv2.rectangle(image, top_left, bottom_right, color, thickness=1)
     return redacted_image
 
-
+"""
 preprocessed = preprocess_image(image)
 preprocessed_text = pytesseract.image_to_string(preprocessed)
 # print(preprocessed_text)
@@ -65,7 +65,6 @@ data = pytesseract.image_to_data(preprocessed, output_type=pytesseract.Output.DI
 bounds = len(data['level'])
 # print(bounds)
 
-"""
 for i in range(bounds):
     # arbitrarily chosen confidence for testing purposes
     if int(data['conf'][i]) >= 90:
@@ -75,7 +74,7 @@ for i in range(bounds):
         # print("top_left: ", top_left)
         # print("bottom_right: ", bottom_right)
         redact_character(preprocessed, top_left, bottom_right, (255))
-"""
 
-cv2.imshow("redacted (CLOSE WINDOW BY HITTING ANY KEY)", preprocessed)
-cv2.waitKey(0)
+# cv2.imshow("redacted (CLOSE WINDOW BY HITTING ANY KEY)", preprocessed)
+# cv2.waitKey(0)
+"""
