@@ -1,14 +1,80 @@
+from math import hypot
 import cv2
 import time
 import numpy as np
-from imutils.object_detection import non_max_suppression
 
 
 def round_nearest(x, base):
     return base * round(x / base)
 
 
-image = cv2.imread('test_image.jpg')
+# Source: https://github.com/jrosebr1/imutils/blob/master/imutils/object_detection.py
+def non_max_suppression(boxes, probs=None, overlapThresh=0.3):
+    # if there are no boxes, return an empty list
+    if len(boxes) == 0:
+        return []
+
+    # if the bounding boxes are integers, convert them to floats -- this
+    # is important since we'll be doing a bunch of divisions
+    if boxes.dtype.kind == "i":
+        boxes = boxes.astype("float")
+
+    # initialize the list of picked indexes
+    pick = []
+
+    # grab the coordinates of the bounding boxes
+    x1 = boxes[:, 0]
+    y1 = boxes[:, 1]
+    x2 = boxes[:, 2]
+    y2 = boxes[:, 3]
+
+    # compute the area of the bounding boxes and grab the indexes to sort
+    # (in the case that no probabilities are provided, simply sort on the
+    # bottom-left y-coordinate)
+    area = (x2 - x1 + 1) * (y2 - y1 + 1)
+    idxs = y2
+
+    # if probabilities are provided, sort on them instead
+    if probs is not None:
+        idxs = probs
+
+    # sort the indexes
+    idxs = np.argsort(idxs)
+
+    # keep looping while some indexes still remain in the indexes list
+    while len(idxs) > 0:
+        # grab the last index in the indexes list and add the index value
+        # to the list of picked indexes
+        last = len(idxs) - 1
+        i = idxs[last]
+        pick.append(i)
+
+        # find the largest (x, y) coordinates for the start of the bounding
+        # box and the smallest (x, y) coordinates for the end of the bounding
+        # box
+        xx1 = np.maximum(x1[i], x1[idxs[:last]])
+        yy1 = np.maximum(y1[i], y1[idxs[:last]])
+        xx2 = np.minimum(x2[i], x2[idxs[:last]])
+        yy2 = np.minimum(y2[i], y2[idxs[:last]])
+
+        # compute the width and height of the bounding box
+        w = np.maximum(0, xx2 - xx1 + 1)
+        h = np.maximum(0, yy2 - yy1 + 1)
+
+        # compute the ratio of overlap
+        overlap = (w * h) / area[idxs[:last]]
+
+        # delete all indexes from the index list that have overlap greater
+        # than the provided overlap threshold
+        idxs = np.delete(idxs, np.concatenate(([last],
+                                               np.where(overlap > overlapThresh)[0])))
+
+    # return only the bounding boxes that were picked
+    return boxes[pick].astype("int")
+
+
+timeStart = time.time()
+image = cv2.imread('download.jpeg')
 height, width = image.shape[:2]
 # EAST only takes images with dimensions of multiples of 32
 height, width = round_nearest(height, 32), round_nearest(width, 32)
@@ -79,11 +145,42 @@ for y in range(0, numRows):
         rects.append((startX, startY, endX, endY))
         confidences.append(scoresData[x])
 
-boxes = non_max_suppression(np.array(rects), probs=confidences)
+boxes = non_max_suppression(np.array(rects), probs=confidences).tolist()
+
+distance_limit = 40
+
+
+def merge_boxes(box1, box2):
+    return [min(box1[0], box2[0]),
+            min(box1[1], box2[1]),
+            max(box1[2], box2[2]),
+            max(box1[3], box2[3])]
+
+
+def calc_dist(box1, box2):
+    return hypot(min(abs(box1[0] - box2[0]), abs(box1[0] - box2[2]), abs(box1[2] - box2[0]), abs(box1[2] - box2[2])),
+                 min(abs(box1[1] - box2[1]), abs(box1[1] - box2[3]), abs(box1[3] - box2[1]), abs(box1[3] - box2[3])))
+
+
+def merge(bounding_boxes):
+    for i, box1 in enumerate(bounding_boxes):
+        for j, box2 in enumerate(bounding_boxes):
+            if j <= i: continue
+            if calc_dist(box1, box2) < distance_limit:
+                new_box = merge_boxes(box1, box2)
+                bounding_boxes[i] = new_box
+                del bounding_boxes[j]
+                return True, bounding_boxes
+    return False, bounding_boxes
+
+
+merging = True
+while merging:
+    merging, boxes = merge(boxes)
 
 for (startX, startY, endX, endY) in boxes:
     cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), -1)
 
-cv2.imwrite('test_result.jpg', image)
-cv2.imshow('test_result.jpg', image)
-cv2.waitKey(0)
+timeEnd = time.time()
+cv2.imwrite('image1.png', image)
+print("[INFO] detection and drawing took {:.6f} seconds".format(timeEnd - timeStart))
