@@ -30,6 +30,7 @@ image = cv2.imread(filename)
 
 def preprocess_image(image):
     assert type(image) is np.ndarray, "pass in an image pls"
+    kernel = np.ones((1,1), np.uint8)
 
     # convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -37,15 +38,22 @@ def preprocess_image(image):
     # threshold image
     thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)[1]
 
+    # adaptive threshold (this is a work in progres don't use)
+    # thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 2)
+
+    # OpenCV's opening and erosion methods to try and increase the fidelity of the thresholded image. does not seem to have noticable impact, explore.
+    # opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
+    # erosion = cv2.erode(thresh, kernel, iterations = 1)
+
     # By default OpenCV stores images in BGR format and since pytesseract assumes RGB format,
     # we need to convert from BGR to RGB format/mode:
     
     # this is actually unnecessary for grayscaled images i think but not sure
-    img_rgb = cv2.cvtColor(thresh, cv2.COLOR_BGR2RGB)
+    # img_rgb = cv2.cvtColor(thresh, cv2.COLOR_BGR2RGB)
     
-    # print("Image preprocess successfully finished.")
+    print("Image preprocess successfully finished.\n")
 
-    return img_rgb
+    return thresh
 
 def redact_character(image, top_left, bottom_right, color):
     redacted_image = cv2.rectangle(image, top_left, bottom_right, color, thickness=1)
@@ -56,30 +64,6 @@ preprocessed = preprocess_image(image)
 preprocessed_text = pytesseract.image_to_string(preprocessed)
 
 print(preprocessed_text)
-cv2.imshow("preprocessed image (PRESS ANY KEY TO CLOSE)", preprocessed)
-cv2.imwrite('./utilities/{original}'.format(filename), preprocessed)
+cv2.imshow("preprocessed {image} (PRESS ANY KEY TO CLOSE)".format(image = filename), preprocessed)
+# cv2.imwrite('test_result.png', preprocessed)
 cv2.waitKey(0)
-
-"""
-# convert the data read by pytesseract into dictionary format
-data = pytesseract.image_to_data(preprocessed, output_type=pytesseract.Output.DICT)
-# print(data['conf'])
-# print(data['text'])
-
-bounds = len(data['level'])
-# print(bounds)
-
-# this doesn't work but i'm not in charge of boxes anyway
-for i in range(bounds):
-    # arbitrarily chosen confidence for testing purposes
-    if int(data['conf'][i]) >= 90:
-        top_left = (data['left'][i], data['top'][i])
-        bottom_right = (data['width'][i], data['height'][i])
-        # print("text: ", data['text'][i])
-        # print("top_left: ", top_left)
-        # print("bottom_right: ", bottom_right)
-        redact_character(preprocessed, top_left, bottom_right, (255))
-
-# cv2.imshow("redacted (CLOSE WINDOW BY HITTING ANY KEY)", preprocessed)
-# cv2.waitKey(0)
-"""
