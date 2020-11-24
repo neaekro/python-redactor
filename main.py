@@ -73,8 +73,9 @@ def non_max_suppression(boxes, probs=None, overlapThresh=0.3):
     return boxes[pick].astype("int")
 
 
+# to access an image in the UTILITIES folder, do './utilities/image_name'
 timeStart = time.time()
-image = cv2.imread('download.jpeg')
+image = cv2.imread('./utilities/test_image.jpg')
 height, width = image.shape[:2]
 # EAST only takes images with dimensions of multiples of 32
 height, width = round_nearest(height, 32), round_nearest(width, 32)
@@ -182,5 +183,5 @@ for (startX, startY, endX, endY) in boxes:
     cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), -1)
 
 timeEnd = time.time()
-cv2.imwrite('image1.png', image)
+cv2.imwrite('./utilities/after.png', image)
 print("[INFO] detection and drawing took {:.6f} seconds".format(timeEnd - timeStart))

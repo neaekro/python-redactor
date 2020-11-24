@@ -19,10 +19,9 @@ TODO next sprint:
 """
 
 # load image file and get info
-# uncomment the line for the type of image you want to try with
-# image = cv2.imread('xray.jpg')
-# image = cv2.imread('xray_upscaled_2x.jpg')
-# image = cv2.imread('xray_upscaled_4x.jpg')
+# to access an image in the UTILITIES folder, do './utilities/image_name'
+filename = './utilities/xray_snip_2.png'
+image = cv2.imread(filename)
 # height, width = image.shape[0], image.shape[1]
 
 # print('Image Height: ', height)
@@ -36,13 +35,13 @@ def preprocess_image(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # threshold image
-    # thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)[1]
+    thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)[1]
 
     # By default OpenCV stores images in BGR format and since pytesseract assumes RGB format,
     # we need to convert from BGR to RGB format/mode:
     
     # this is actually unnecessary for grayscaled images i think but not sure
-    img_rgb = cv2.cvtColor(gray, cv2.COLOR_BGR2RGB)
+    img_rgb = cv2.cvtColor(thresh, cv2.COLOR_BGR2RGB)
     
     # print("Image preprocess successfully finished.")
 
@@ -52,11 +51,16 @@ def redact_character(image, top_left, bottom_right, color):
     redacted_image = cv2.rectangle(image, top_left, bottom_right, color, thickness=1)
     return redacted_image
 
-"""
+
 preprocessed = preprocess_image(image)
 preprocessed_text = pytesseract.image_to_string(preprocessed)
-# print(preprocessed_text)
 
+print(preprocessed_text)
+cv2.imshow("preprocessed image (PRESS ANY KEY TO CLOSE)", preprocessed)
+cv2.imwrite('./utilities/{original}'.format(filename), preprocessed)
+cv2.waitKey(0)
+
+"""
 # convert the data read by pytesseract into dictionary format
 data = pytesseract.image_to_data(preprocessed, output_type=pytesseract.Output.DICT)
 # print(data['conf'])
@@ -65,6 +69,7 @@ data = pytesseract.image_to_data(preprocessed, output_type=pytesseract.Output.DI
 bounds = len(data['level'])
 # print(bounds)
 
+# this doesn't work but i'm not in charge of boxes anyway
 for i in range(bounds):
     # arbitrarily chosen confidence for testing purposes
     if int(data['conf'][i]) >= 90:
