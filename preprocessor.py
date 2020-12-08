@@ -4,66 +4,66 @@ import pytesseract
 
 # pytesseract.pytesseract.tesseract_cmd = "/bin/tesseract"
 
-"""
-Steps:
-1. Use OpenCV to preprocess the image
-    1.1 Convert the image to grayscale
-    1.2 Use the grayscaled image and threshold it (step removed)
-2. Pass the preprocessed image to tesseract and have it return text bounding box data
-3. Use OpenCV to draw text and redact the bounding box data
-
-TODO next sprint:
-1. Manually crop out the text from image
-2. Feed into tesseract
-3. See if the info is accurate
-"""
-
 # load image file and get info
 # to access an image in the UTILITIES folder, do './utilities/image_name'
-filename = './utilities/xray_snip_2.png'
+# or input the path to the image for FILENAME
+filename = './utilities/xray_snip_1.png'
 image = cv2.imread(filename)
 # height, width = image.shape[0], image.shape[1]
-
 # print('Image Height: ', height)
 # print('Image Width: ', width)
 # print(type(image))
 
-def preprocess_image(image):
-    assert type(image) is np.ndarray, "pass in an image pls"
-    kernel = np.ones((1,1), np.uint8)
+def convert_to_gray(image):
+    # convert from bgr to rgb
+    rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
 
     # convert to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
 
-    # threshold image
-    thresh = cv2.threshold(gray, 150, 255, cv2.THRESH_BINARY)[1]
+    return gray
 
-    # adaptive threshold (this is a work in progres don't use)
-    # thresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 31, 2)
+def resize_image(image, factor):
+    width = int(image.shape[1] * factor / 100)
+    height = int(image.shape[0] * factor / 100)
+    dimensions = (width, height)
 
-    # OpenCV's opening and erosion methods to try and increase the fidelity of the thresholded image. does not seem to have noticable impact, explore.
-    # opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel)
-    # erosion = cv2.erode(thresh, kernel, iterations = 1)
+    resized = cv2.resize(image, dimensions, interpolation = cv2.INTER_AREA)
+    return resized
 
-    # By default OpenCV stores images in BGR format and since pytesseract assumes RGB format,
-    # we need to convert from BGR to RGB format/mode:
-    
-    # this is actually unnecessary for grayscaled images i think but not sure
-    # img_rgb = cv2.cvtColor(thresh, cv2.COLOR_BGR2RGB)
-    
-    print("Image preprocess successfully finished.\n")
+def preprocess_image(image):
+    assert type(image) is np.ndarray, "pass in an image pls"
+    result = resize_image(image, 220)
+    result = convert_to_gray(result)
 
-    return thresh
+    # Gaussian adaptive threshold (this is a work in progres)
+    # result = cv2.adaptiveThreshold(result, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 11, 2)
 
-def redact_character(image, top_left, bottom_right, color):
-    redacted_image = cv2.rectangle(image, top_left, bottom_right, color, thickness=1)
-    return redacted_image
+    # threshold image and inverse b/w (this works okay if you use it by itself after the grayscale and return it)
+    result = cv2.threshold(result, 137, 255, cv2.THRESH_BINARY_INV)[1]
 
+    # Otsu's method adaptive threshold (another work in progress)
+    blur = cv2.GaussianBlur(result, (5,5), 0)
+    result = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
 
-preprocessed = preprocess_image(image)
-preprocessed_text = pytesseract.image_to_string(preprocessed)
+    print("Image preprocess successfully completed.\n")
 
+    return result
+
+def process(image):
+    preprocessed = preprocess_image(image)
+    preprocessed_text = pytesseract.image_to_string(preprocessed)
+    return preprocessed_text
+
+"""
+print("Running Tesseract version: ", pytesseract.get_tesseract_version())
+print("--Start of Image Text--")
 print(preprocessed_text)
-cv2.imshow("preprocessed {image} (PRESS ANY KEY TO CLOSE)".format(image = filename), preprocessed)
+print("--End of Image Text--")
+
 # cv2.imwrite('test_result.png', preprocessed)
-cv2.waitKey(0)
+
+# keeps the results open until the ESC key is pressed
+while((cv2.waitKey() & 0xEFFFFF) != 27):
+    cv2.imshow("(PRESS ESC TO CLOSE) preprocessed {image}".format(image = filename), preprocessed)
+"""
