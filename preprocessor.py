@@ -46,7 +46,7 @@ def preprocess_image(image):
     blur = cv2.GaussianBlur(result, (5,5), 0)
     result = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)[1]
 
-    print("Image preprocess successfully completed.\n")
+    # print("Image preprocess successfully completed.\n")
 
     return result
 
