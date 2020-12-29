@@ -19,14 +19,27 @@ To install the python packages, run
 ```python
 pip install <package name>
 ```
+If you choose to build an image with Docker, then this step is unnecessary as they will be built together.
 
-## Usage
+## Usage With Docker
 Tested using the Postman Desktop App
 
-1. Run server.py
-2. Setup a new request to localhost:5000 or whichever IP is hosted by server.py
-3. Change the request type to POST
-4. Click body in the navigation bar of that request, and click "form-data". 
-5. Include a file with the key "file" that is a picture with text of the form jpg, jpeg, or png. It should look something like the picture below
+1. After pulling from the repository, navigate to the directory containing Dockerfile and run 
+```
+docker build .
+```
+2. After the image is done buildng, run
+```
+docker run -p 5000:5000 <image ID>
+```
+which should show the IP the server is hosted on
+
+3. In the Postman Desktop App, setup a new request to the IP above
+4. Change the request type to POST
+5. Click body in the navigation bar of that request, and click "form-data". 
+6. Include a file with the key "file" that is a picture with text of the form jpg, jpeg, or png. It should look something like the picture below
 ![example request](https://i.imgur.com/T0iCBLI.png)
-6. Send the request and you should receive a JSON of the aforementioned format described in the description
+7. Send the request and you should receive a JSON of the aforementioned format described in the description
+
+## Without Docker
+If you choose not to use Docker, install the required packages manually, pull from the repository, run server.py, and continue from Step 3 above.
