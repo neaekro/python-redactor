@@ -230,10 +230,10 @@ def get_bounding_boxes(image):
 
             # compute both the starting and ending (x, y)-coordinates for
             # the text prediction bounding box
-            endX = int(offsetX + (cos * xData1[x]) + (sin * xData2[x]))
-            endY = int(offsetY - (sin * xData1[x]) + (cos * xData2[x]))
-            startX = int(endX - w)
-            startY = int(endY - h)
+            endX = max(int(offsetX + (cos * xData1[x]) + (sin * xData2[x])), 0)
+            endY = max(int(offsetY - (sin * xData1[x]) + (cos * xData2[x])), 0)
+            startX = max(int(endX - w), 0)
+            startY = max(int(endY - h), 0)
 
             # add the bounding box coordinates and probability score to
             # our respective lists
@@ -250,13 +250,17 @@ def get_bounding_boxes(image):
     return boxes
 
 
-buffer_pixels = 40
+buffer_pixels = 20
 
 
 def crop_image(image, startX, startY, endX, endY):
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    return image[startY - buffer_pixels // 2:endY + buffer_pixels // 2,
-           startX - buffer_pixels // 2:endX + buffer_pixels // 2]
+    bounds_check = list(map(lambda x: max(x, 0), [startX - buffer_pixels, startY - buffer_pixels, endX + buffer_pixels,
+                                                  endY + buffer_pixels]))
+    bounds_check = [min(bounds_check[0], image.shape[1]), min(bounds_check[1], image.shape[0]),
+                    min(bounds_check[2], image.shape[1]), min(bounds_check[3], image.shape[0])]
+    return image[bounds_check[1]:bounds_check[3],
+           bounds_check[0]:bounds_check[2]]
 
 # merging = True
 # while merging:
