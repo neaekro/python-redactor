@@ -24,22 +24,23 @@ If you choose to build an image with Docker, then this step is unnecessary as th
 ## Usage With Docker
 Tested using the Postman Desktop App
 
-1. After pulling from the repository, navigate to the directory containing Dockerfile and run 
+1. Make sure Docker is installed on your machine
+2. Run
 ```
-docker build .
+docker pull jwn8175/xray-redactor
 ```
-2. After the image is done buildng, run
+3. After the image is done pulling, run
 ```
-docker run -p 5000:5000 <image ID>
+docker run -p 5000:5000 jwn8175/xray-redactor
 ```
 which should show the IP the server is hosted on
 
-3. In the Postman Desktop App, setup a new request to the IP above
-4. Change the request type to POST
-5. Click body in the navigation bar of that request, and click "form-data". 
-6. Include a file with the key "file" that is a picture with text of the form jpg, jpeg, or png. It should look something like the picture below
+4. In the Postman Desktop App, setup a new request to the IP above
+5. Change the request type to POST
+6. Click body in the navigation bar of that request, and click "form-data". 
+7. Include a file with the key "file" that is a picture with text of the form jpg, jpeg, or png. It should look something like the picture below
 ![example request](https://i.imgur.com/T0iCBLI.png)
-7. Send the request and you should receive a JSON of the aforementioned format described in the description
+8. Send the request and you should receive a JSON of the aforementioned format described in the description
 
 ## Without Docker
 If you choose not to use Docker, install the required packages manually, pull from the repository, run server.py, and continue from Step 3 above.
