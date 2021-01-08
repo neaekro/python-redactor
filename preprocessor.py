@@ -7,7 +7,8 @@ import pytesseract
 # load image file and get info
 # to access an image in the UTILITIES folder, do './utilities/image_name'
 # or input the path to the image for FILENAME
-filename = './utilities/xray_snip_1.png'
+filename = './utilities/xray_snip_3.png'
+# filename = './utilities/xray.jpg'
 image = cv2.imread(filename)
 # height, width = image.shape[0], image.shape[1]
 # print('Image Height: ', height)
@@ -50,20 +51,64 @@ def preprocess_image(image):
 
     return result
 
+def adjust_gamma(image, gamma=0.1):
+    # i want this to activiate only with white on white images
+    # build a lookup table mapping the pixel values [0, 255] to
+    # their adjusted gamma values
+    invGamma = 1.0 / gamma
+    table = np.array([((i / 255.0) ** invGamma) * 255
+        for i in np.arange(0, 256)]).astype("uint8")
+    # apply gamma correction using the lookup table
+    return cv2.LUT(image, table)
+
+"""
+def lab(image):
+    lab = cv2.cvtColor(image, cv2.COLOR_BGR2LAB)
+    # cv2.imshow("lab", lab)
+
+    l, a, b = cv2.split(lab)
+    # cv2.imshow('l_channel', l)
+    #cv2.imshow('a_channel', a)
+    # cv2.imshow('b_channel', b)
+
+    clahe = cv2.createCLAHE(clipLimit=3.0, tileGridSize=(8,8))
+    cl = clahe.apply(l)
+    # cv2.imshow('CLAHE output', cl)
+
+    limg = cv2.merge((cl,a,b))
+    # cv2.imshow('limg', limg)
+
+    final = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
+    # cv2.imshow('final', final)
+    return final
+"""
+
+def get_average_color(image):
+    avg_color_per_row = np.average(image, axis=0)
+    avg_color = np.average(avg_color_per_row, axis=0)
+    return sum(avg_color)/3 # Averages the average B, G, R values of an image
+
 def process(image):
-    preprocessed = preprocess_image(image)
+    if (get_average_color(image) > 125):
+        preprocessed = adjust_gamma(image)
+    else: 
+        preprocessed = preprocess_image(image)
     preprocessed_text = pytesseract.image_to_string(preprocessed)
     return preprocessed_text
 
 """
+preprocessed_image = adjust_gamma(image)
+preprocessed_text = pytesseract.image_to_string(preprocessed_image)
+
 print("Running Tesseract version: ", pytesseract.get_tesseract_version())
 print("--Start of Image Text--")
 print(preprocessed_text)
 print("--End of Image Text--")
+print("Average Color [B, G, R]: ", get_average_color(image))
 
 # cv2.imwrite('test_result.png', preprocessed)
 
 # keeps the results open until the ESC key is pressed
 while((cv2.waitKey() & 0xEFFFFF) != 27):
-    cv2.imshow("(PRESS ESC TO CLOSE) preprocessed {image}".format(image = filename), preprocessed)
+    cv2.imshow("(PRESS ESC TO CLOSE) preprocessed {image}".format(image = filename), preprocessed_image)
 """
