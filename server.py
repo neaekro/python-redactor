@@ -7,7 +7,7 @@ app = Flask(__name__)
 ALLOWED_EXTENSIONS = ['jpg', 'png', 'jpeg']
 
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/', methods=['POST'])
 def index():
     if request.method == 'POST':
         if 'file' not in request.files:

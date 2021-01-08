@@ -250,13 +250,13 @@ def get_bounding_boxes(image):
     return boxes
 
 
-buffer_pixels = 20
-
-
 def crop_image(image, startX, startY, endX, endY):
     image = cv2.imdecode(image, cv2.IMREAD_COLOR)
-    bounds_check = list(map(lambda x: max(x, 0), [startX - buffer_pixels, startY - buffer_pixels, endX + buffer_pixels,
-                                                  endY + buffer_pixels]))
+    buffer_pixels_x = int(image.shape[1] / 100)
+    buffer_pixels_y = int(image.shape[0] / 100)
+    bounds_check = list(
+        map(lambda x: max(x, 0), [startX - buffer_pixels_x, startY - buffer_pixels_y, endX + buffer_pixels_x,
+                                  endY + buffer_pixels_y]))
     bounds_check = [min(bounds_check[0], image.shape[1]), min(bounds_check[1], image.shape[0]),
                     min(bounds_check[2], image.shape[1]), min(bounds_check[3], image.shape[0])]
     return image[bounds_check[1]:bounds_check[3],
