@@ -19,6 +19,8 @@ def index():
             filestr = file.read()
             npimg = numpy.fromstring(filestr, numpy.uint8)
             boxes = detector.get_bounding_boxes(npimg)
+            if boxes == "error":
+                return jsonify(error="an error has occurred")
             text = []
             for (startX, startY, endX, endY) in boxes:
                 text.append(preprocessor.process(detector.crop_image(npimg, startX, startY, endX, endY)))

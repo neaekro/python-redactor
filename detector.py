@@ -240,7 +240,11 @@ def get_bounding_boxes(image):
             rects.append((startX, startY, endX, endY))
             confidences.append(scoresData[x])
 
-    boxes = non_max_suppression(np.array(rects), probs=confidences).tolist()
+    boxes = non_max_suppression(np.array(rects), probs=confidences)
+    if type(boxes) is not list:
+        boxes = boxes.tolist()
+    else:
+        return "error"
 
     distance_limit = 40
     merging = True
