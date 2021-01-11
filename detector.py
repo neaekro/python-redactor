@@ -1,4 +1,4 @@
-from math import hypot
+from math import dist
 import cv2
 # import time
 import numpy as np
@@ -165,16 +165,37 @@ def merge_boxes(box1, box2):
             max(box1[3], box2[3])]
 
 
-def calc_dist(box1, box2):
-    return hypot(min(abs(box1[0] - box2[0]), abs(box1[0] - box2[2]), abs(box1[2] - box2[0]), abs(box1[2] - box2[2])),
-                 min(abs(box1[1] - box2[1]), abs(box1[1] - box2[3]), abs(box1[3] - box2[1]), abs(box1[3] - box2[3])))
+# Source: https://stackoverflow.com/questions/4978323/how-to-calculate-distance-between-two-rectangles-context-a-game-in-lua
+def calc_dist(x1, y1, x1b, y1b, x2, y2, x2b, y2b):
+    left = x2b < x1
+    right = x1b < x2
+    bottom = y2b < y1
+    top = y1b < y2
+    if top and left:
+        return dist((x1, y1b), (x2b, y2))
+    elif left and bottom:
+        return dist((x1, y1), (x2b, y2b))
+    elif bottom and right:
+        return dist((x1b, y1), (x2, y2b))
+    elif right and top:
+        return dist((x1b, y1b), (x2, y2))
+    elif left:
+        return x1 - x2b
+    elif right:
+        return x2 - x1b
+    elif bottom:
+        return y1 - y2b
+    elif top:
+        return y2 - y1b
+    else:  # rectangles intersect
+        return 0
 
 
 def merge(bounding_boxes, distance_limit):
     for i, box1 in enumerate(bounding_boxes):
         for j, box2 in enumerate(bounding_boxes):
             if j <= i: continue
-            if calc_dist(box1, box2) < distance_limit:
+            if calc_dist(box1[0], box1[1], box1[2], box1[3], box2[0], box2[1], box2[2], box2[3]) < distance_limit:
                 new_box = merge_boxes(box1, box2)
                 bounding_boxes[i] = new_box
                 del bounding_boxes[j]
@@ -246,7 +267,7 @@ def get_bounding_boxes(image):
     else:
         return "error"
 
-    distance_limit = 40
+    distance_limit = max(image.shape[0], image.shape[1]) / 15
     merging = True
     while merging:
         merging, boxes = merge(boxes, distance_limit)
