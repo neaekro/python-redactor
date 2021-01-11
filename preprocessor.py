@@ -7,12 +7,12 @@ import pytesseract
 # load image file and get info
 # to access an image in the UTILITIES folder, do './utilities/image_name'
 # or input the path to the image for FILENAME
-filename = './utilities/xray_snip_3.png'
+filename = './utilities/levine_joshua_2.jpg'
 # filename = './utilities/xray.jpg'
 image = cv2.imread(filename)
-# height, width = image.shape[0], image.shape[1]
-# print('Image Height: ', height)
-# print('Image Width: ', width)
+height, width = image.shape[0], image.shape[1]
+print('Image Height: ', height)
+print('Image Width: ', width)
 # print(type(image))
 
 def convert_to_gray(image):
@@ -29,12 +29,12 @@ def resize_image(image, factor):
     height = int(image.shape[0] * factor / 100)
     dimensions = (width, height)
 
-    resized = cv2.resize(image, dimensions, interpolation = cv2.INTER_AREA)
+    resized = cv2.resize(image, dimensions, interpolation = cv2.INTER_CUBIC)
     return resized
 
 def preprocess_image(image):
     assert type(image) is np.ndarray, "pass in an image pls"
-    result = resize_image(image, 220)
+    result = resize_image(image, 200)
     result = convert_to_gray(result)
 
     # Gaussian adaptive threshold (this is a work in progres)
@@ -97,10 +97,10 @@ def process(image):
     return preprocessed_text
 
 """
-preprocessed_image = adjust_gamma(image)
+preprocessed_image = preprocess_image(image)
 preprocessed_text = pytesseract.image_to_string(preprocessed_image)
 
-print("Running Tesseract version: ", pytesseract.get_tesseract_version())
+print("Running Tesseract version:", pytesseract.get_tesseract_version())
 print("--Start of Image Text--")
 print(preprocessed_text)
 print("--End of Image Text--")
