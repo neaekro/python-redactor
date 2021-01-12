@@ -10,10 +10,13 @@ import pytesseract
 filename = './utilities/levine_joshua_2.jpg'
 # filename = './utilities/xray.jpg'
 image = cv2.imread(filename)
+
+"""
 height, width = image.shape[0], image.shape[1]
 print('Image Height: ', height)
 print('Image Width: ', width)
-# print(type(image))
+print(type(image))
+"""
 
 def convert_to_gray(image):
     # convert from bgr to rgb
