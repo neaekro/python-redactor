@@ -1,6 +1,6 @@
 BSD 3-Clause License
 
-Copyright (c) 2021, neaekro, jwn8175
+Copyright (c) 2021, Tyler Sameshima (tysameshima@gmail.com), Jay Ni (jay.ni.2001@gmail.com)
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

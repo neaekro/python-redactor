@@ -1,6 +1,36 @@
+"""
+BSD 3-Clause License
+
+Copyright (c) 2021, Tyler Sameshima (tysameshima@gmail.com), Jay Ni (jay.ni.2001@gmail.com)
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+3. Neither the name of the copyright holder nor the names of its
+   contributors may be used to endorse or promote products derived from
+   this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+"""
 from math import dist
 import cv2
-# import time
 import numpy as np
 
 
@@ -77,86 +107,6 @@ net = cv2.dnn.readNet("frozen_east_text_detection.pb")
 layerNames = [
     "feature_fusion/Conv_7/Sigmoid",
     "feature_fusion/concat_3"]
-"""
-# to access an image in the UTILITIES folder, do './utilities/image_name'
-timeStart = time.time()
-image = cv2.imread('./utilities/test_image.jpg')
-height, width = image.shape[:2]
-# EAST only takes images with dimensions of multiples of 32
-height, width = round_nearest(height, 32), round_nearest(width, 32)
-image = cv2.resize(image, (width, height))
-net = cv2.dnn.readNet("frozen_east_text_detection.pb")
-
-# The first layer is our output sigmoid activation which gives us the probability of a region containing text or not.
-# The second layer is the output feature map that represents the “geometry” of the image — we’ll be able to use this
-# geometry to derive the bounding box coordinates of the text in the input image
-layerNames = [
-    "feature_fusion/Conv_7/Sigmoid",
-    "feature_fusion/concat_3"]
-# Specifies the mean to be subtracted from the image that was used to train the model
-blob = cv2.dnn.blobFromImage(image, 1.0, (width, height),
-                             (123.68, 116.78, 103.94), swapRB=True, crop=False)
-start = time.time()
-net.setInput(blob)
-scores, geometry = net.forward(layerNames)
-end = time.time()
-print("[INFO] text detection took {:.6f} seconds".format(end - start))
-
-(numRows, numCols) = scores.shape[2:4]
-rects = []
-confidences = []
-minimum_confidence = 0.5
-
-for y in range(0, numRows):
-    # extract the scores (probabilities), followed by the geometrical
-    # data used to derive potential bounding box coordinates that
-    # surround text
-    scoresData = scores[0, 0, y]
-    xData0 = geometry[0, 0, y]
-    xData1 = geometry[0, 1, y]
-    xData2 = geometry[0, 2, y]
-    xData3 = geometry[0, 3, y]
-    anglesData = geometry[0, 4, y]
-
-    # loop over the number of columns
-    for x in range(0, numCols):
-        # if our score does not have sufficient probability, ignore it
-        if scoresData[x] < minimum_confidence:
-            continue
-
-        # compute the offset factor as our resulting feature maps will
-        # be 4x smaller than the input image
-        (offsetX, offsetY) = (x * 4.0, y * 4.0)
-
-        # extract the rotation angle for the prediction and then
-        # compute the sin and cosine
-        angle = anglesData[x]
-        cos = np.cos(angle)
-        sin = np.sin(angle)
-
-        # use the geometry volume to derive the width and height of
-        # the bounding box
-        h = xData0[x] + xData2[x]
-        w = xData1[x] + xData3[x]
-
-        # compute both the starting and ending (x, y)-coordinates for
-        # the text prediction bounding box
-        endX = int(offsetX + (cos * xData1[x]) + (sin * xData2[x]))
-        endY = int(offsetY - (sin * xData1[x]) + (cos * xData2[x]))
-        startX = int(endX - w)
-        startY = int(endY - h)
-
-        # add the bounding box coordinates and probability score to
-        # our respective lists
-        rects.append((startX, startY, endX, endY))
-        confidences.append(scoresData[x])
-
-boxes = non_max_suppression(np.array(rects), probs=confidences).tolist()
-
-distance_limit = 40
-
-"""
-
 
 def merge_boxes(box1, box2):
     return [min(box1[0], box2[0]),
@@ -286,14 +236,3 @@ def crop_image(image, startX, startY, endX, endY):
                     min(bounds_check[2], image.shape[1]), min(bounds_check[3], image.shape[0])]
     return image[bounds_check[1]:bounds_check[3],
            bounds_check[0]:bounds_check[2]]
-
-# merging = True
-# while merging:
-#     merging, boxes = merge(boxes)
-
-# for (startX, startY, endX, endY) in boxes:
-#     cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), -1)
-
-# timeEnd = time.time()
-# cv2.imwrite('./utilities/after.png', image)
-# print("[INFO] detection and drawing took {:.6f} seconds".format(timeEnd - timeStart))
