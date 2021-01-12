@@ -1,3 +1,4 @@
+import requests
 import cv2
 import numpy as np
 import random
@@ -27,9 +28,8 @@ for i, line in enumerate(wrapped_text):
 
     cv2.putText(image, "Hello World!", (x, y), font, fontScale, fontColor, lineType)
 
-cv2.imwrite("random_{width}_x_{height}.jpg".format(width = width, height = height), image)
-
-"""
-while((cv2.waitKey() & 0xEFFFFF) != 27):
-    cv2.imshow("(PRESS ESC TO CLOSE) random {width} x {height}".format(width = width, height = height), image)
-"""
+cv2.imwrite("random.jpg".format(width = width, height = height), image)
+files = {'file': open('random.jpg', 'rb')}
+r = requests.post('http://localhost:5000', files=files)
+print(r.status_code)
+print(r.text)
