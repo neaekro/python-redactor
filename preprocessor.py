@@ -39,9 +39,7 @@ filename = './utilities/random.jpeg'
 image = cv2.imread(filename)
 
 def convert_to_gray(image):
-    # convert from bgr to rgb
     rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-    # convert to grayscale
     gray = cv2.cvtColor(rgb, cv2.COLOR_RGB2GRAY)
 
     return gray
