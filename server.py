@@ -50,8 +50,6 @@ def index():
             filestr = file.read()
             npimg = numpy.fromstring(filestr, numpy.uint8)
             boxes = detector.get_bounding_boxes(npimg)
-            if boxes == "error":
-                return jsonify(error="an error has occurred in detection")
             boxes = sorted(boxes, key=lambda box: box[0])
             text = []
             for (startX, startY, endX, endY) in boxes:

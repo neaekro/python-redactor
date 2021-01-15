@@ -214,9 +214,6 @@ def get_bounding_boxes(image):
     boxes = non_max_suppression(np.array(rects), probs=confidences)
     if type(boxes) is not list:
         boxes = boxes.tolist()
-    else:
-        return "error"
-
     distance_limit = max(image.shape[0], image.shape[1]) / 15
     merging = True
     while merging:
