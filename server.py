@@ -52,6 +52,7 @@ def index():
             boxes = detector.get_bounding_boxes(npimg)
             if boxes == "error":
                 return jsonify(error="an error has occurred in detection")
+            boxes = sorted(boxes, key=lambda box: box[0])
             text = []
             for (startX, startY, endX, endY) in boxes:
                 text.append(preprocessor.process(detector.crop_image(npimg, startX, startY, endX, endY)))
